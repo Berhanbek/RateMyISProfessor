@@ -1,25 +1,41 @@
-import db from '../db/connection.js';
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
-// Fetch ratings for a professor (optionally filtered by instructor)
-export const getRatings = async (professorId, instructor = null) => {
-  await db.read();
-  let ratings = db.data.ratings.filter(r => r.professorId === professorId);
-  if (instructor) {
-    ratings = ratings.filter(r => r.instructor === instructor);
+const Rating = sequelize.define('Rating', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true
+  },
+  professorId: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  instructor: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  overallExperience: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  courseLoad: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  examFairness: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  courseContent: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
-  return ratings;
-};
+}, {
+  timestamps: false
+});
 
-// Add a new rating
-export const addRating = async (professorId, instructor, ratings) => {
-  await db.read();
-  const newRating = {
-    professorId,
-    instructor,
-    ratings,
-    createdAt: new Date().toISOString(),
-  };
-  db.data.ratings.push(newRating);
-  await db.write();
-  return newRating;
-};
+export default Rating;

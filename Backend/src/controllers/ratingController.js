@@ -1,4 +1,5 @@
-import db from '../db.js';
+import Rating from '../models/ratingModel.js';
+import Professor from '../models/professorModel.js';
 import { validateRating } from '../utils/validators.js';
 
 export const getRatings = async (req, res) => {
@@ -7,20 +8,18 @@ export const getRatings = async (req, res) => {
     if (!professorId) {
       return res.status(400).json({ success: false, error: 'professorId is required' });
     }
-    await db.read();
-    let ratings = db.data.ratings.filter(r => r.professorId === professorId);
-    if (instructor) {
-      ratings = ratings.filter(r => r.instructor === instructor);
-    }
+    const where = { professorId };
+    if (instructor) where.instructor = instructor;
+    const ratings = await Rating.findAll({ where });
     if (ratings.length === 0) {
       return res.json({ success: true, data: null });
     }
     const total = ratings.length;
     const sum = ratings.reduce((acc, r) => ({
-      overallExperience: acc.overallExperience + r.ratings.overallExperience,
-      courseLoad: acc.courseLoad + r.ratings.courseLoad,
-      examFairness: acc.examFairness + r.ratings.examFairness,
-      courseContent: acc.courseContent + r.ratings.courseContent
+      overallExperience: acc.overallExperience + r.overallExperience,
+      courseLoad: acc.courseLoad + r.courseLoad,
+      examFairness: acc.examFairness + r.examFairness,
+      courseContent: acc.courseContent + r.courseContent
     }), { overallExperience: 0, courseLoad: 0, examFairness: 0, courseContent: 0 });
     const averages = {
       overallExperience: parseFloat((sum.overallExperience / total).toFixed(1)),
@@ -44,29 +43,34 @@ export const getRatings = async (req, res) => {
 
 export const submitRating = async (req, res) => {
   try {
-    const ratingData = req.body;
-    const errors = validateRating(ratingData);
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
+    const { professorId, instructor, overallExperience, courseLoad, examFairness, courseContent } = req.body;
+    // Update your validation here if needed
+    if (
+      !professorId ||
+      overallExperience == null ||
+      courseLoad == null ||
+      examFairness == null ||
+      courseContent == null
+    ) {
+      return res.status(400).json({ success: false, errors: ['All rating fields are required'] });
     }
-    const { professorId, instructor, ratings } = ratingData;
-    await db.read();
-    const professor = db.data.professors.find(p => p.id === professorId);
+    const professor = await Professor.findByPk(professorId);
     if (!professor) {
       return res.status(404).json({ success: false, error: 'Professor not found' });
     }
     if (instructor && professor.instructors && !professor.instructors.includes(instructor)) {
       return res.status(400).json({ success: false, error: 'Instructor not found for this course' });
     }
-    const newRating = {
+    const newRating = await Rating.create({
       id: Date.now().toString(),
       professorId,
       instructor: instructor || null,
-      ratings,
-      createdAt: new Date().toISOString()
-    };
-    db.data.ratings.push(newRating);
-    await db.write();
+      overallExperience,
+      courseLoad,
+      examFairness,
+      courseContent,
+      createdAt: new Date()
+    });
     res.status(201).json({ success: true, data: newRating });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -35,7 +35,7 @@ export const updateProfessorRatings = async (
     body: JSON.stringify({
       professorId,
       instructor,
-      ratings: newRating
+      ...newRating // <-- Spread the fields at the top level
     })
   });
   const json: ApiResponse<any> = await res.json();

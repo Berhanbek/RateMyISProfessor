@@ -1,16 +1,21 @@
 import express from 'express';
 import app from './app.js';
-import  db  from './db.js';
-import seedProfessors from './seed.js';
+import db from './db.js';
+import sequelize from './config/db.js';
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  await db.read();
-  await seedProfessors(); // 👈 Seeds only if needed
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync(); // Sync models with DB
+    console.log('PostgreSQL connection established and models synced');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Unable to connect to the database:', err);
+  }
 };
 
 startServer();

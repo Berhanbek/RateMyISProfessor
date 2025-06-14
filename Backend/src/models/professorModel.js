@@ -1,27 +1,40 @@
-import db from '../db/connection.js';
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
-const Professor = {
-  async getAllProfessors() {
-    await db.read();
-    return db.data.professors || [];
+const Professor = sequelize.define('Professor', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true
   },
-
-  async getProfessorById(id) {
-    await db.read();
-    return db.data.professors.find((prof) => prof.id === id);
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
   },
-
-  async getProfessorsByYear(year) {
-    await db.read();
-    return db.data.professors.filter((p) => p.year === year);
+  course: {
+    type: DataTypes.STRING,
+    allowNull: false
   },
-
-  async addProfessor(professor) {
-    await db.read();
-    db.data.professors.push(professor);
-    await db.write();
-    return professor;
+  office: {
+    type: DataTypes.STRING
   },
-};
+  year: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  instructors: {
+    type: DataTypes.TEXT, // Store as JSON string
+    allowNull: false,
+    defaultValue: '[]',
+    get() {
+      const rawValue = this.getDataValue('instructors');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(val) {
+      this.setDataValue('instructors', JSON.stringify(val));
+    }
+  }
+}, {
+  timestamps: false
+});
 
 export default Professor;
