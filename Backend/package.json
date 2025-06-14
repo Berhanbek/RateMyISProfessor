@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/seedProfessors.js"
+    "start": "node src/server.js",
+    "seed": "node src/seed.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
