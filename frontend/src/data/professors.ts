@@ -48,35 +48,39 @@ export const thirdYearProfessors: Professor[] = [
     instructors: ['Dr Ermias Abebe', 'Falema Garedow']
   },
   {
-    id: 'advanced-internet',
+    id: 'advanced-internet-programming', // FIXED
     name: 'Advanced Internet Programming',
     course: 'Advanced Internet Programming',
     office: 'Multiple Offices',
     instructors: ['Selam Desta', 'Yesuf Mohamed']
   },
   {
-    id: 'workshet-lamenew',
-    name: 'Dr Workshet Lamenew',
-    course: 'Administration of Systems & Networks',
-    office: 'Faculty Office'
+    id: 'admin-systems-networks', // FIXED
+    name: 'Admin of Systems & Networks',
+    course: 'Admin of Systems & Networks',
+    office: 'Faculty Office',
+    instructors: ['Dr Workshet Lamenew']
   },
   {
-    id: 'eyasu-takele',
-    name: 'Eyasu Takele',
+    id: 'mobile-computing', // FIXED
+    name: 'Mobile Computing',
     course: 'Mobile Computing',
-    office: 'Faculty Office'
+    office: 'Faculty Office',
+    instructors: ['Eyasu Takele']
   },
   {
-    id: 'lemma-lessa',
-    name: 'Dr Lemma Lessa',
-    course: 'Information System Security',
-    office: 'Faculty Office'
+    id: 'info-system-security', // FIXED
+    name: 'Info System Security',
+    course: 'Info System Security',
+    office: 'Faculty Office',
+    instructors: ['Dr Lemma Lessa']
   },
   {
-    id: 'meseret-hailu',
-    name: 'W/o Meseret Hailu',
+    id: 'oosad', // FIXED
+    name: 'OOSAD',
     course: 'OOSAD',
-    office: 'Faculty Office'
+    office: 'Faculty Office',
+    instructors: ['W/o Meseret Hailu']
   }
 ];
 
