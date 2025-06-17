@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import Professor from './models/professorModel.js';
 import sequelize from './config/db.js';
 

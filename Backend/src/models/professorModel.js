@@ -6,32 +6,14 @@ const Professor = sequelize.define('Professor', {
     type: DataTypes.STRING,
     primaryKey: true
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  course: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  office: {
-    type: DataTypes.STRING
-  },
-  year: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
+  name: DataTypes.STRING,
+  course: DataTypes.STRING,
+  office: DataTypes.STRING,
+  year: DataTypes.STRING,
   instructors: {
-    type: DataTypes.TEXT, // Store as JSON string
+    type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: false,
-    defaultValue: '[]',
-    get() {
-      const rawValue = this.getDataValue('instructors');
-      return rawValue ? JSON.parse(rawValue) : [];
-    },
-    set(val) {
-      this.setDataValue('instructors', JSON.stringify(val));
-    }
+    defaultValue: []
   }
 }, {
   timestamps: false
