@@ -13,26 +13,14 @@ const Rating = sequelize.define('Rating', {
       key: 'id'
     }
   },
-  instructor: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  overallExperience: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  courseLoad: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  examFairness: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  courseContent: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
+  instructor: DataTypes.STRING,
+  overall: DataTypes.INTEGER,
+  engagement: DataTypes.INTEGER,
+  workload: DataTypes.INTEGER,
+  attendance: DataTypes.INTEGER,
+  fairness: DataTypes.INTEGER,
+  organization: DataTypes.INTEGER,
+  review: DataTypes.STRING,
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

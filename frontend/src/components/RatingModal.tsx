@@ -1,16 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { X, Star, CheckCircle } from 'lucide-react';
-import { Professor, Rating, ProfessorRatingStats } from '../types';
-import { ratingCriteria } from '../data/professors';
-import { RatingDisplay } from './RatingDisplay';
-import { fetchProfessorRatings, updateProfessorRatings } from '../services/ratingsService';
+import { X, Send, ChevronDown } from 'lucide-react';
+import { Professor, RatingSubmission } from '../types';
+import { LoadingSpinner } from './LoadingSpinner';
+import { useToast } from '../context/ToastContext';
+import { apiService } from '../services/api';
 
 interface RatingModalProps {
   professor: Professor;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (rating: Rating) => void;
+  onSubmit: () => void;
 }
+
+interface RatingState {
+  engagement: number;
+  workload: number;
+  attendance: number;
+  fairness: number;
+  organization: number;
+  overall: number;
+}
+
+const ratingCategories = [
+  {
+    key: 'engagement' as keyof RatingState,
+    label: 'Engagement & Support',
+    description: 'How well does the instructor engage students?'
+  },
+  {
+    key: 'workload' as keyof RatingState,
+    label: 'Workload Balance',
+    description: 'How manageable is the course workload?'
+  },
+  {
+    key: 'attendance' as keyof RatingState,
+    label: 'Attendance Policy',
+    description: 'How important is attendance?'
+  },
+  {
+    key: 'fairness' as keyof RatingState,
+    label: 'Assessment Fairness',
+    description: 'How fair are exams and assignments?'
+  },
+  {
+    key: 'organization' as keyof RatingState,
+    label: 'Course Organization',
+    description: 'How well-structured is the course?'
+  },
+  {
+    key: 'overall' as keyof RatingState,
+    label: 'Overall Experience',
+    description: 'Your complete experience'
+  }
+];
+
+const ratingLabels = ['Poor', 'Below Average', 'Average', 'Good', 'Excellent'];
 
 export const RatingModal: React.FC<RatingModalProps> = ({
   professor,
@@ -18,200 +62,260 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   onClose,
   onSubmit
 }) => {
-  const [selectedInstructor, setSelectedInstructor] = useState<string>('');
-  const [ratings, setRatings] = useState<Omit<Rating, 'professorId' | 'instructor'>>({
-    overallExperience: 0,
-    courseLoad: 0,
-    examFairness: 0,
-    courseContent: 0
+  const [ratings, setRatings] = useState<RatingState>({
+    engagement: 3,
+    workload: 3,
+    attendance: 3,
+    fairness: 3,
+    organization: 3,
+    overall: 3
   });
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [professorRatings, setProfessorRatings] = useState<ProfessorRatingStats | null>(null);
-  const [isLoadingRatings, setIsLoadingRatings] = useState(false);
+  
+  const [selectedInstructor, setSelectedInstructor] = useState('');
+  const [review, setReview] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const { showToast } = useToast();
 
-  // Load existing ratings when modal opens or instructor changes
   useEffect(() => {
-    if (isOpen && professor) {
-      loadProfessorRatings();
+    if (isOpen) {
+      setRatings({
+        engagement: 3,
+        workload: 3,
+        attendance: 3,
+        fairness: 3,
+        organization: 3,
+        overall: 3
+      });
+      setSelectedInstructor(professor.instructors?.[0] || '');
+      setReview('');
+      setShowConfirmation(false);
     }
-  }, [isOpen, professor, selectedInstructor]);
+  }, [isOpen, professor]);
 
-  const loadProfessorRatings = async () => {
-    setIsLoadingRatings(true);
+  const handleRatingChange = (category: keyof RatingState, value: number) => {
+    setRatings(prev => ({ ...prev, [category]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (professor.instructors && !selectedInstructor) {
+      showToast('error', 'Please select an instructor');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
     try {
-      const ratingsData = await fetchProfessorRatings(
-        professor.id, 
-        professor.instructors ? selectedInstructor : undefined
-      );
-      setProfessorRatings(ratingsData);
+      const submission: RatingSubmission = {
+        professorId: professor.id,
+        instructor: professor.instructors ? selectedInstructor : undefined,
+        ...ratings,
+        review: review.trim() || undefined
+      };
+
+      await apiService.submitRating(submission);
+      setShowConfirmation(true);
+      
+      // Auto close after showing confirmation
+      setTimeout(() => {
+        onSubmit();
+        onClose();
+      }, 2500);
     } catch (error) {
-      console.error('Failed to load ratings:', error);
+      showToast('error', 'Failed to submit rating. Please try again.');
     } finally {
-      setIsLoadingRatings(false);
+      setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
 
-  const handleRatingChange = (criterion: keyof typeof ratings, value: number) => {
-    setRatings(prev => ({ ...prev, [criterion]: value }));
-  };
-
-  const handleSubmit = async () => {
-    const rating: Rating = {
-      professorId: professor.id,
-      instructor: selectedInstructor || undefined,
-      ...ratings
-    };
-    
-    try {
-      // Update ratings in the backend simulation
-      const updatedRatings = await updateProfessorRatings(
-        professor.id,
-        ratings,
-        professor.instructors ? selectedInstructor : undefined
-      );
-      
-      // Update local state with new ratings
-      setProfessorRatings(updatedRatings);
-      
-      onSubmit(rating);
-      setIsSubmitted(true);
-      
-      setTimeout(() => {
-        setIsSubmitted(false);
-        onClose();
-        // Reset form
-        setSelectedInstructor('');
-        setRatings({
-          overallExperience: 0,
-          courseLoad: 0,
-          examFairness: 0,
-          courseContent: 0
-        });
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to submit rating:', error);
-    }
-  };
-
-  const isFormValid = Object.values(ratings).every(rating => rating > 0) &&
-    (!professor.instructors || selectedInstructor);
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {isSubmitted ? (
-          <div className="p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+  if (showConfirmation) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+          
+          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">
+            <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="text-2xl text-neutral-600 dark:text-neutral-400">✓</div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-3">
               Thanks for your honest rating!
             </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              Your feedback helps other students make informed decisions.
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Your feedback helps fellow students make better decisions.
             </p>
           </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Rate Professor
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                  {professor.course}
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-              >
-                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+        
+        <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="relative p-6 border-b border-neutral-200 dark:border-neutral-700">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="pr-12">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-1">
+                Rate {professor.name}
+              </h2>
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                {professor.course} • {professor.office}
+              </p>
             </div>
+          </div>
 
-            <div className="p-6 space-y-6">
-              {/* Existing Ratings Display */}
-              <RatingDisplay 
-                ratings={professorRatings} 
-                isLoading={isLoadingRatings}
-                instructor={professor.instructors ? selectedInstructor : undefined}
-              />
-
+          <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+            <form onSubmit={handleSubmit} className="p-6">
+              {/* Instructor Selection */}
               {professor.instructors && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Which instructor did you have?
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-neutral-900 dark:text-white mb-2">
+                    Select Instructor
                   </label>
-                  <div className="space-y-2">
-                    {professor.instructors.map((instructor) => (
-                      <label key={instructor} className="flex items-center">
-                        <input
-                          type="radio"
-                          name="instructor"
-                          value={instructor}
-                          checked={selectedInstructor === instructor}
-                          onChange={(e) => setSelectedInstructor(e.target.value)}
-                          className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                        />
-                        <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="relative">
+                    <select
+                      value={selectedInstructor}
+                      onChange={(e) => setSelectedInstructor(e.target.value)}
+                      className="w-full p-3 pr-10 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent transition-all appearance-none"
+                      required
+                    >
+                      <option value="">Choose an instructor...</option>
+                      {professor.instructors.map(instructor => (
+                        <option key={instructor} value={instructor}>
                           {instructor}
-                        </span>
-                      </label>
-                    ))}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
                   </div>
                 </div>
               )}
 
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Add Your Rating
-                </h3>
-                
-                {ratingCriteria.map((criterion) => (
-                  <div key={criterion.key} className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {criterion.icon} {criterion.label}
-                    </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                      {criterion.description}
-                    </p>
-                    <div className="flex space-x-2">
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <button
-                          key={value}
-                          onClick={() => handleRatingChange(criterion.key, value)}
-                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                        >
-                          <Star
-                            className={`w-6 h-6 ${
-                              value <= ratings[criterion.key]
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300 dark:text-gray-600'
+              {/* Rating Categories */}
+              <div className="space-y-6 mb-6">
+                {ratingCategories.map((category) => (
+                  <div 
+                    key={category.key}
+                    className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
+                          {category.label}
+                        </h3>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+                          {category.description}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-neutral-900 dark:text-white">
+                          {ratings[category.key]}
+                        </div>
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {ratingLabels[ratings[category.key] - 1]}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          value={ratings[category.key]}
+                          onChange={(e) => handleRatingChange(category.key, parseInt(e.target.value))}
+                          className="w-full h-2 rounded-full appearance-none cursor-pointer bg-neutral-200 dark:bg-neutral-700 slider"
+                        />
+                      </div>
+                      
+                      {/* Rating markers */}
+                      <div className="flex justify-between px-0.5">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => handleRatingChange(category.key, value)}
+                            className={`w-6 h-6 rounded-full text-xs font-medium transition-all ${
+                              value === ratings[category.key]
+                                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
+                                : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-300 dark:hover:bg-neutral-600'
                             }`}
-                          />
-                        </button>
-                      ))}
-                      <span className="flex items-center ml-3 text-sm text-gray-600 dark:text-gray-300">
-                        {ratings[criterion.key]}/5
-                      </span>
+                          >
+                            {value}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
+              </div>
 
+              {/* Review Section */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-neutral-900 dark:text-white mb-2">
+                  Share Your Experience (Optional)
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                    maxLength={200}
+                    rows={3}
+                    placeholder="Help future students with specific insights..."
+                    className="w-full p-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent transition-all resize-none"
+                  />
+                  <div className="absolute bottom-2 right-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    {review.length}/200
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex gap-3">
                 <button
-                  onClick={handleSubmit}
-                  disabled={!isFormValid}
-                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors duration-200 disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 px-4 py-3 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors font-medium"
                 >
-                  Submit Rating
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 disabled:bg-neutral-400 dark:disabled:bg-neutral-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Submit Rating</span>
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          </>
-        )}
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

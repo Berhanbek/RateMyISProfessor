@@ -11,31 +11,7 @@ export const getRatings = async (req, res) => {
     const where = { professorId };
     if (instructor) where.instructor = instructor;
     const ratings = await Rating.findAll({ where });
-    if (ratings.length === 0) {
-      return res.json({ success: true, data: null });
-    }
-    const total = ratings.length;
-    const sum = ratings.reduce((acc, r) => ({
-      overallExperience: acc.overallExperience + r.overallExperience,
-      courseLoad: acc.courseLoad + r.courseLoad,
-      examFairness: acc.examFairness + r.examFairness,
-      courseContent: acc.courseContent + r.courseContent
-    }), { overallExperience: 0, courseLoad: 0, examFairness: 0, courseContent: 0 });
-    const averages = {
-      overallExperience: parseFloat((sum.overallExperience / total).toFixed(1)),
-      courseLoad: parseFloat((sum.courseLoad / total).toFixed(1)),
-      examFairness: parseFloat((sum.examFairness / total).toFixed(1)),
-      courseContent: parseFloat((sum.courseContent / total).toFixed(1))
-    };
-    res.json({
-      success: true,
-      data: {
-        professorId,
-        instructor,
-        averageRatings: averages,
-        totalRatings: total
-      }
-    });
+    res.json({ success: true, data: ratings });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -43,20 +19,26 @@ export const getRatings = async (req, res) => {
 
 export const submitRating = async (req, res) => {
   try {
-    const { professorId, instructor, overallExperience, courseLoad, examFairness, courseContent } = req.body;
+    const { professorId, instructor, overall, engagement, workload, attendance, fairness, organization } = req.body;
     // Update your validation here if needed
     if (
       !professorId ||
-      overallExperience == null ||
-      courseLoad == null ||
-      examFairness == null ||
-      courseContent == null
+      !instructor ||
+      overall == null ||
+      engagement == null ||
+      workload == null ||
+      attendance == null ||
+      fairness == null ||
+      organization == null
     ) {
       return res.status(400).json({ success: false, errors: ['All rating fields are required'] });
     }
     const professor = await Professor.findByPk(professorId);
     if (!professor) {
       return res.status(404).json({ success: false, error: 'Professor not found' });
+    }
+    if (professor.instructors && professor.instructors.length > 0 && !instructor) {
+      return res.status(400).json({ success: false, error: 'Instructor is required for this course' });
     }
     if (instructor && professor.instructors && !professor.instructors.includes(instructor)) {
       return res.status(400).json({ success: false, error: 'Instructor not found for this course' });
@@ -65,10 +47,13 @@ export const submitRating = async (req, res) => {
       id: Date.now().toString(),
       professorId,
       instructor: instructor || null,
-      overallExperience,
-      courseLoad,
-      examFairness,
-      courseContent,
+      overall,
+      engagement,
+      workload,
+      attendance,
+      fairness,
+      organization,
+      review: req.body.review || null,
       createdAt: new Date()
     });
     res.status(201).json({ success: true, data: newRating });

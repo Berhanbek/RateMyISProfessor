@@ -1,112 +1,92 @@
-import { Professor, RatingCriteria } from '../types';
+import { Professor } from '../types';
 
-export const secondYearProfessors: Professor[] = [
+export const professors: Professor[] = [
+  // 2nd Year Professors
   {
     id: 'dagmawit-mohammed',
     name: 'W/t Dagmawit Mohammed',
     course: 'Advanced Database',
-    office: 'Eshetu Chole 122'
+    office: 'Eshetu Chole 122',
+    year: 2
   },
   {
     id: 'andargachew-asfaw',
     name: 'Ato Andargachew Asfaw',
     course: 'Data Structure and Algorithm',
-    office: 'Eshetu Chole 319'
+    office: 'Eshetu Chole 319',
+    year: 2
   },
   {
     id: 'adey-edessa',
     name: 'W/ro Adey Edessa',
     course: 'Intro to Storage and Retrieval',
-    office: 'Eshetu Chole 113'
+    office: 'Eshetu Chole 113',
+    year: 2
   },
   {
     id: 'lemlem-hagos',
     name: 'W/o Lemlem Hagos',
     course: 'OOP',
-    office: 'Eshetu Chole 116'
+    office: 'Eshetu Chole 116',
+    year: 2
   },
   {
     id: 'birkset',
     name: 'W/ro Birkset',
     course: 'Statistics',
-    office: 'Office TBD'
+    office: 'Office TBD',
+    year: 2
   },
   {
     id: 'fikadu-dereje',
     name: 'Ato Fikadu Dereje',
     course: 'Economics',
-    office: 'Office TBD'
-  }
-];
-
-export const thirdYearProfessors: Professor[] = [
+    office: 'Office TBD',
+    year: 2
+  },
+  // 3rd Year Professors
   {
-    id: 'ecommerce',
-    name: 'E-Commerce',
+    id: 'ecommerce-instructors',
+    name: 'E-Commerce Instructors',
     course: 'E-Commerce',
-    office: 'Multiple Offices',
+    office: 'Various',
+    year: 3,
     instructors: ['Dr Ermias Abebe', 'Falema Garedow']
   },
   {
-    id: 'advanced-internet-programming', // FIXED
-    name: 'Advanced Internet Programming',
+    id: 'aip-instructors',
+    name: 'Advanced Internet Programming Instructors',
     course: 'Advanced Internet Programming',
-    office: 'Multiple Offices',
+    office: 'Various',
+    year: 3,
     instructors: ['Selam Desta', 'Yesuf Mohamed']
   },
   {
-    id: 'admin-systems-networks', // FIXED
-    name: 'Admin of Systems & Networks',
-    course: 'Admin of Systems & Networks',
+    id: 'workshet-lamenew',
+    name: 'Dr Workshet Lamenew',
+    course: 'Systems & Network Administration',
     office: 'Faculty Office',
-    instructors: ['Dr Workshet Lamenew']
+    year: 3
   },
   {
-    id: 'mobile-computing', // FIXED
-    name: 'Mobile Computing',
+    id: 'eyasu-takele',
+    name: 'Eyasu Takele',
     course: 'Mobile Computing',
     office: 'Faculty Office',
-    instructors: ['Eyasu Takele']
+    year: 3
   },
   {
-    id: 'info-system-security', // FIXED
-    name: 'Info System Security',
-    course: 'Info System Security',
+    id: 'lemma-lessa',
+    name: 'Dr Lemma Lessa',
+    course: 'Information System Security',
     office: 'Faculty Office',
-    instructors: ['Dr Lemma Lessa']
+    year: 3
   },
   {
-    id: 'oosad', // FIXED
-    name: 'OOSAD',
+    id: 'meseret-hailu',
+    name: 'W/o Meseret Hailu',
     course: 'OOSAD',
     office: 'Faculty Office',
-    instructors: ['W/o Meseret Hailu']
-  }
-];
-
-export const ratingCriteria: RatingCriteria[] = [
-  {
-    label: 'Overall Experience',
-    key: 'overallExperience',
-    description: 'How satisfied are you with this instructor overall?',
-    icon: '⭐'
-  },
-  {
-    label: 'Course Load',
-    key: 'courseLoad',
-    description: 'How manageable is the workload for this course?',
-    icon: '📚'
-  },
-  {
-    label: 'Exam Fairness',
-    key: 'examFairness',
-    description: 'How fair and reasonable are the exams?',
-    icon: '📝'
-  },
-  {
-    label: 'Course Content',
-    key: 'courseContent',
-    description: 'How relevant and engaging is the course content?',
-    icon: '📘'
+    year: 3
   }
 ];
