@@ -7,4 +7,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  preview: {
+    allowedHosts: ['ratemyisprofessor-2-7ck5.onrender.com'],
+  },
 });
