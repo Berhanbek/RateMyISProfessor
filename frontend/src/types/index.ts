@@ -3,38 +3,26 @@ export interface Professor {
   name: string;
   course: string;
   office: string;
-  year: 2 | 3;
-  instructors?: string[];
+  totalRatings: number;
+  averageRating: number;
+  alternateInstructor?: string;
 }
 
 export interface Rating {
   id: string;
   professorId: string;
-  instructor?: string;
   engagement: number;
   workload: number;
   attendance: number;
-  fairness: number;
+  examFairness: number;
   organization: number;
   overall: number;
-  review?: string;
-  createdAt: string;
+  textReview?: string;
+  timestamp: Date;
 }
 
-export interface RatingSubmission {
-  professorId: string;
-  instructor?: string;
-  engagement: number;
-  workload: number;
-  attendance: number;
-  fairness: number;
-  organization: number;
-  overall: number;
-  review?: string;
-}
-
-export interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
+export interface RatingCategory {
+  key: keyof Omit<Rating, 'id' | 'professorId' | 'textReview' | 'timestamp'>;
+  label: string;
+  description: string;
 }
