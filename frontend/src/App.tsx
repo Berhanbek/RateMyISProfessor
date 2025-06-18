@@ -135,6 +135,12 @@ function App() {
             onSubmit={handleRatingSubmit}
           />
         )}
+
+        <ul>
+          {professors.map(prof => (
+            <li key={prof.id}>{prof.name} - {prof.course}</li>
+          ))}
+        </ul>
       </main>
 
       {/* Footer */}
