@@ -3,8 +3,11 @@ import express from 'express';
 import app from './app.js';
 import db from './db.js';
 import sequelize from './config/db.js';
+import reviewRoutes from "./routes/reviewRoutes.js";
 
 const PORT = process.env.PORT || 5000;
+
+app.use("/api/reviews", reviewRoutes);
 
 const startServer = async () => {
   try {

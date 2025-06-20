@@ -4,12 +4,12 @@ import { validateRating } from '../utils/validators.js';
 
 export const getRatings = async (req, res) => {
   try {
-    const { professorId, instructor } = req.query;
+    const { professorId, selectedInstructor } = req.query;
     if (!professorId) {
       return res.status(400).json({ success: false, error: 'professorId is required' });
     }
     const where = { professorId };
-    if (instructor) where.instructor = instructor;
+    if (selectedInstructor) where.selectedInstructor = selectedInstructor;
     const ratings = await Rating.findAll({ where });
     res.json({ success: true, data: ratings });
   } catch (error) {
@@ -19,42 +19,56 @@ export const getRatings = async (req, res) => {
 
 export const submitRating = async (req, res) => {
   try {
-    const { professorId, instructor, overall, engagement, workload, attendance, fairness, organization } = req.body;
-    // Update your validation here if needed
+    const {
+      professorId,
+      selectedInstructor,
+      teachingStyle,
+      workload,
+      attendance,
+      assessmentFairness,
+      courseOrganization,
+      engagementSupport,
+      overallExperience,
+      textReview
+    } = req.body;
+
     if (
       !professorId ||
-      !instructor ||
-      overall == null ||
-      engagement == null ||
+      teachingStyle == null ||
       workload == null ||
       attendance == null ||
-      fairness == null ||
-      organization == null
+      assessmentFairness == null ||
+      courseOrganization == null ||
+      engagementSupport == null ||
+      overallExperience == null
     ) {
       return res.status(400).json({ success: false, errors: ['All rating fields are required'] });
     }
+
     const professor = await Professor.findByPk(professorId);
     if (!professor) {
       return res.status(404).json({ success: false, error: 'Professor not found' });
     }
-    if (professor.instructors && professor.instructors.length > 0 && !instructor) {
+    if (professor.instructors && professor.instructors.length > 0 && !selectedInstructor) {
       return res.status(400).json({ success: false, error: 'Instructor is required for this course' });
     }
-    if (instructor && professor.instructors && !professor.instructors.includes(instructor)) {
+    if (selectedInstructor && professor.instructors && !professor.instructors.includes(selectedInstructor)) {
       return res.status(400).json({ success: false, error: 'Instructor not found for this course' });
     }
+
     const newRating = await Rating.create({
       id: Date.now().toString(),
       professorId,
-      instructor: instructor || null,
-      overall,
-      engagement,
+      selectedInstructor: selectedInstructor || null,
+      teachingStyle,
       workload,
       attendance,
-      fairness,
-      organization,
-      review: req.body.review || null,
-      createdAt: new Date()
+      assessmentFairness,
+      courseOrganization,
+      engagementSupport,
+      overallExperience,
+      textReview,
+      submittedAt: new Date()
     });
     res.status(201).json({ success: true, data: newRating });
   } catch (error) {

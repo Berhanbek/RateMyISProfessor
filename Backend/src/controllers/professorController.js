@@ -1,5 +1,6 @@
 import Professor from '../models/professorModel.js';
 
+// Example Express controller
 export const getProfessors = async (req, res) => {
   try {
     const { year } = req.query;
