@@ -3,8 +3,9 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Professor } from "@/types"
-import { MapPin, Star, MessageSquare } from "lucide-react"
+import { MapPin, Star } from "lucide-react"
 import { useEffect, useState } from "react"
+import { fetchReviews } from "@/services/api"
 
 interface ProfessorCardProps {
   professor: Professor
@@ -14,11 +15,35 @@ interface ProfessorCardProps {
 
 export function ProfessorCard({ professor, onClick, animationDelay = 0 }: ProfessorCardProps) {
   const [isVisible, setIsVisible] = useState(false)
+  const [reviewCount, setReviewCount] = useState(0)
+  const [avgRating, setAvgRating] = useState(0)
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), animationDelay)
     return () => clearTimeout(timer)
   }, [animationDelay])
+
+  useEffect(() => {
+    async function loadReviews() {
+      try {
+        const reviews = await fetchReviews(professor.id)
+        setReviewCount(reviews.length)
+        if (reviews.length > 0) {
+          // Calculate average rating (assuming review.overall or review.ratings.overall)
+          const avg =
+            reviews.reduce((sum: number, r: any) => sum + (r.overall ?? r.ratings?.overall ?? 0), 0) /
+            reviews.length
+          setAvgRating(avg)
+        } else {
+          setAvgRating(0)
+        }
+      } catch {
+        setReviewCount(0)
+        setAvgRating(0)
+      }
+    }
+    loadReviews()
+  }, [professor.id])
 
   return (
     <Card
@@ -49,14 +74,9 @@ export function ProfessorCard({ professor, onClick, animationDelay = 0 }: Profes
           {/* Rating and Reviews */}
           <div className="flex items-center gap-2 mt-2">
             <Star className="h-4 w-4 text-yellow-400" />
-            <span className="font-semibold">
-              {professor.totalReviews > 0 && typeof professor.averageRating === "number"
-                ? professor.averageRating.toFixed(1)
-                : "0"}
-            </span>
+            <span className="font-semibold">{reviewCount > 0 ? avgRating.toFixed(1) : "0"}</span>
             <span className="flex items-center text-xs text-muted-foreground ml-2">
-              <MessageSquare className="h-4 w-4 mr-1" />
-              {professor.totalReviews}
+              ({reviewCount} reviews)
             </span>
           </div>
 

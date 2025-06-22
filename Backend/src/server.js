@@ -4,12 +4,12 @@ import app from './app.js';
 import db from './db.js';
 import sequelize from './config/db.js';
 import reviewRoutes from "./routes/reviewRoutes.js";
-import professorRoutes from "./routes/professorRoutes.js"; // <-- add this line
+import professorsRouter from "./routes/professors.js"; // THIS IS THE CORRECT FILE
 
 const PORT = process.env.PORT || 5000;
 
 app.use("/api/reviews", reviewRoutes);
-app.use("/api/professors", professorRoutes); // <-- add this line
+app.use('/', professorsRouter); // USE THIS
 
 const startServer = async () => {
   try {

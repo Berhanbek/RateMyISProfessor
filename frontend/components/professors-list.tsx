@@ -28,7 +28,7 @@ export function ProfessorsList({ year, onProfessorSelect, onBackToYearSelection 
       setError(null)
 
       try {
-        const data = await fetchProfessors(year)
+        const data = await fetchProfessors([year])
         setProfessors(data)
       } catch (error) {
         console.error("Error fetching professors:", error)
@@ -41,6 +41,11 @@ export function ProfessorsList({ year, onProfessorSelect, onBackToYearSelection 
 
     fetchData()
   }, [year])
+
+  const fetchData = async () => {
+    const data = await fetchProfessors([2, 3]) // or your filter
+    setProfessors(data)
+  }
 
   const filteredAndSortedProfessors = professors.filter(
     (prof) =>

@@ -12,11 +12,21 @@ const Professor = sequelize.define('Professor', {
   },
   course: DataTypes.STRING,
   office: DataTypes.STRING,
-  year: DataTypes.STRING,
-  instructors: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+  year: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: []
+  },
+  instructors: {
+    type: DataTypes.TEXT, // Store as TEXT for compatibility
+    allowNull: false,
+    defaultValue: '[]',
+    get() {
+      const rawValue = this.getDataValue('instructors');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('instructors', JSON.stringify(value));
+    }
   }
 }, {
   timestamps: false

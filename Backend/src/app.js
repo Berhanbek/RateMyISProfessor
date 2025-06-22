@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import apiRouter from './routes/index.js';
 import { errorHandler } from './middlewares/errorHandler.js';
-import professorRoutes from './routes/professorRoutes.js';
+import professorsRouter from './routes/professors.js';
 
 const app = express();
 
@@ -14,8 +14,8 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/api', apiRouter);
-app.use('/api/professors', professorRoutes);
+app.use('/api', professorsRouter);
+app.use('/api/professors', professorsRouter);
 
 // Error handling
 app.use(errorHandler);

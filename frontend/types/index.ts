@@ -9,6 +9,7 @@ export interface Professor {
   rating: number
   totalReviews: number
   alternativeInstructor?: string
+  avgRating?: number;  
 }
 
 export interface Rating {

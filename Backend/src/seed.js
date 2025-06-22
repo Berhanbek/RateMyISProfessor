@@ -102,7 +102,7 @@ const professors = [
     year: 3,
     rating: 0,
     totalReviews: 0,
-    instructors: ['Eyasu Takele']
+    instructors: 'Eyasu Takele'
   },
   {
     id: 'info-system-security',
@@ -112,7 +112,7 @@ const professors = [
     year: 3,
     rating: 0,
     totalReviews: 0,
-    instructors: ['Dr. Lemma Lessa']
+    instructors:['Dr. Lemma Lessa']
   },
   {
     id: 'oosad',
