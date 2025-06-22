@@ -1,36 +1,27 @@
 import express from "express";
 import Professor from "../models/professorModel.js";
 import Rating from "../models/ratingModel.js";
-
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    // Get year from query string, e.g. /api/professors?year=2
-    const { year } = req.query;
+    const professors = await Professor.findAll();
 
-    // Build filter object
-    const where = {};
-    if (year) {
-      where.year = year.toString(); // Make sure it's a string, since your model uses string
-    }
-
-    // Fetch professors with optional year filter
-    const professors = await Professor.findAll({ where });
-
+    // For each professor, get all ratings and calculate total and average
     const professorData = await Promise.all(
       professors.map(async (prof) => {
+        // Get all ratings for this professor
         const ratings = await Rating.findAll({ where: { professorId: prof.id } });
         const totalReviews = ratings.length;
+        // Calculate average rating
         const avgRating =
           totalReviews > 0
             ? ratings.reduce((sum, r) => sum + (r.overall || 0), 0) / totalReviews
             : 0;
-
         return {
           ...prof.toJSON(),
           totalReviews,
-          rating: avgRating,
+          averageRating: avgRating,
         };
       })
     );

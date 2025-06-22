@@ -50,11 +50,13 @@ export function ProfessorCard({ professor, onClick, animationDelay = 0 }: Profes
           <div className="flex items-center gap-2 mt-2">
             <Star className="h-4 w-4 text-yellow-400" />
             <span className="font-semibold">
-              {professor.totalReviews > 0 ? professor.rating.toFixed(1) : "N/A"}
+              {professor.totalReviews > 0 && typeof professor.averageRating === "number"
+                ? professor.averageRating.toFixed(1)
+                : "0"}
             </span>
             <span className="flex items-center text-xs text-muted-foreground ml-2">
               <MessageSquare className="h-4 w-4 mr-1" />
-              {professor.totalReviews > 0 ? professor.totalReviews : ""}
+              {professor.totalReviews}
             </span>
           </div>
 

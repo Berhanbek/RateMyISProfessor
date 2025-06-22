@@ -8,6 +8,7 @@ const Rating = sequelize.define('Rating', {
   },
   professorId: {
     type: DataTypes.STRING,
+    allowNull: false,
     references: {
       model: 'Professors',
       key: 'id'

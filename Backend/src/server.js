@@ -14,7 +14,7 @@ app.use("/api/professors", professorRoutes); // <-- add this line
 const startServer = async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync(); // <-- Add this line
+    await sequelize.sync(); // This line creates/updates tables!
     console.log('PostgreSQL connection established and models synced');
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
